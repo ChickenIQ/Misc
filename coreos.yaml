@@ -29,7 +29,7 @@ systemd:
         [Service]
         Type=oneshot
         RemainAfterExit=yes
-        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive iptables wireguard-tools podman python3 btop ncdu iperf3 stress-ng
+        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive iptables wireguard-tools podman python3 vim btop ncdu iperf3 stress-ng 
         ExecStart=/bin/touch /var/lib/%N.stamp
         ExecStart=/bin/systemctl --no-block reboot
 
@@ -83,6 +83,12 @@ storage:
           PermitRootLogin no
           PermitEmptyPasswords no
           PasswordAuthentication no
+
+    # Default editor
+    - path: /etc/profile.d/zz-default-editor.sh
+      overwrite: true
+      contents:
+        inline: export EDITOR=vim
 
     # Update strategy
     - path: /etc/zincati/config.d/55-updates-strategy.toml
