@@ -1,0 +1,87 @@
+variant: fcos
+version: 1.5.0
+
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJF4Waz2pv+NAEsLMT1kaFbtYjx6faBRPgHzlHdN30In
+
+systemd:
+  units:
+    - name: rpm-ostree-install-requirements.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Install required packages
+        Wants=network-online.target
+        After=network-online.target
+        Before=zincati.service
+        ConditionPathExists=!/var/lib/%N.stamp
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive python3 btop ncdu wireguard-tools iptables iperf3 podman wget stress-ng
+        ExecStart=/bin/touch /var/lib/%N.stamp
+        ExecStart=/bin/systemctl --no-block reboot
+
+        [Install]
+        WantedBy=multi-user.target
+
+storage:
+  filesystems:
+    - device: /dev/disk/by-partlabel/root
+      wipe_filesystem: true
+      format: btrfs
+      label: root
+      mount_options:
+        - noatime
+        - discard=async
+        - space_cache=v2
+        - compress=zstd:1
+
+    - device: /dev/disk/by-partlabel/EFI-SYSTEM
+      path: /var/mnt/boot
+      format: vfat
+      label: EFI-SYSTEM
+
+  files:
+    # Hostname
+    - path: /etc/hostname
+      contents:
+        inline: 'coreos'
+
+    # Zram
+    - path: /etc/systemd/zram-generator.conf
+      contents:
+        inline: '[zram0]'
+
+    # SSH
+    - path: /etc/ssh/sshd_config.d/99-default.conf
+      contents:
+        inline: |
+          MaxAuthTries 3
+          PermitRootLogin no
+          PermitEmptyPasswords no
+          PasswordAuthentication no
+
+    # Update strategy
+    - path: /etc/zincati/config.d/55-updates-strategy.toml
+      contents:
+        inline: |
+          [updates]
+          strategy = "periodic"
+          [[updates.periodic.window]]
+          days = [ "Sat", "Sun" ]
+          start_time = "22:30"
+          length_minutes = 60
+
+    # Netboot
+    - path: /var/mnt/boot/netboot.xyz.efi
+      contents:
+        source: https://boot.netboot.xyz/ipxe/netboot.xyz.efi
+
+    - path: /var/mnt/boot/netboot.xyz-arm64.efi
+      contents:
+        source: https://boot.netboot.xyz/ipxe/netboot.xyz-arm64.efi
