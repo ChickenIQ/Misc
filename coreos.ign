@@ -6,6 +6,7 @@
     "users": [
       {
         "name": "core",
+        "passwordHash": "$y$j9T$bFn3qKyKL44fXpedvIu0D0$PxQUvso852tNIA.Ck2Xv9mWf3IUeHwesySy77A.tNC1",
         "sshAuthorizedKeys": [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJF4Waz2pv+NAEsLMT1kaFbtYjx6faBRPgHzlHdN30In"
         ]
