@@ -22,6 +22,13 @@
         }
       },
       {
+        "path": "/etc/systemd/resolved.conf.d/dns.conf",
+        "contents": {
+          "compression": "",
+          "source": "data:,%5BResolve%5D%0ADNS%3D1.1.1.1%0AFallbackDNS%3D8.8.8.8%0ADomains%3D~.%0A"
+        }
+      },
+      {
         "path": "/etc/systemd/zram-generator.conf",
         "contents": {
           "compression": "",
@@ -79,7 +86,12 @@
   "systemd": {
     "units": [
       {
-        "contents": "[Unit]\nDescription=Install required packages\nWants=network-online.target\nAfter=network-online.target\nBefore=zincati.service\nConditionPathExists=!/var/lib/%N.stamp\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/bin/rpm-ostree install -y --allow-inactive python3 btop ncdu wireguard-tools iptables iperf3 podman wget stress-ng\nExecStart=/bin/touch /var/lib/%N.stamp\nExecStart=/bin/systemctl --no-block reboot\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": false,
+        "mask": true,
+        "name": "rpm-ostree-countme.timer"
+      },
+      {
+        "contents": "[Unit]\nDescription=Install required packages\nWants=network-online.target\nAfter=network-online.target\nBefore=zincati.service\nConditionPathExists=!/var/lib/%N.stamp\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/bin/rpm-ostree install -y --allow-inactive iptables wireguard-tools podman python3 btop ncdu iperf3 stress-ng\nExecStart=/bin/touch /var/lib/%N.stamp\nExecStart=/bin/systemctl --no-block reboot\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
         "name": "rpm-ostree-install-requirements.service"
       }
