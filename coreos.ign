@@ -1,0 +1,88 @@
+{
+  "ignition": {
+    "version": "3.4.0"
+  },
+  "passwd": {
+    "users": [
+      {
+        "name": "core",
+        "sshAuthorizedKeys": [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJF4Waz2pv+NAEsLMT1kaFbtYjx6faBRPgHzlHdN30In"
+        ]
+      }
+    ]
+  },
+  "storage": {
+    "files": [
+      {
+        "path": "/etc/hostname",
+        "contents": {
+          "compression": "",
+          "source": "data:,coreos"
+        }
+      },
+      {
+        "path": "/etc/systemd/zram-generator.conf",
+        "contents": {
+          "compression": "",
+          "source": "data:,%5Bzram0%5D"
+        }
+      },
+      {
+        "path": "/etc/ssh/sshd_config.d/99-default.conf",
+        "contents": {
+          "compression": "",
+          "source": "data:,MaxAuthTries%203%0APermitRootLogin%20no%0APermitEmptyPasswords%20no%0APasswordAuthentication%20no%0A"
+        }
+      },
+      {
+        "path": "/etc/zincati/config.d/55-updates-strategy.toml",
+        "contents": {
+          "compression": "",
+          "source": "data:;base64,W3VwZGF0ZXNdCnN0cmF0ZWd5ID0gInBlcmlvZGljIgpbW3VwZGF0ZXMucGVyaW9kaWMud2luZG93XV0KZGF5cyA9IFsgIlNhdCIsICJTdW4iIF0Kc3RhcnRfdGltZSA9ICIyMjozMCIKbGVuZ3RoX21pbnV0ZXMgPSA2MAo="
+        }
+      },
+      {
+        "path": "/var/mnt/boot/netboot.xyz.efi",
+        "contents": {
+          "source": "https://boot.netboot.xyz/ipxe/netboot.xyz.efi"
+        }
+      },
+      {
+        "path": "/var/mnt/boot/netboot.xyz-arm64.efi",
+        "contents": {
+          "source": "https://boot.netboot.xyz/ipxe/netboot.xyz-arm64.efi"
+        }
+      }
+    ],
+    "filesystems": [
+      {
+        "device": "/dev/disk/by-partlabel/root",
+        "format": "btrfs",
+        "label": "root",
+        "mountOptions": [
+          "noatime",
+          "discard=async",
+          "space_cache=v2",
+          "compress=zstd:1"
+        ],
+        "wipeFilesystem": true
+      },
+      {
+        "device": "/dev/disk/by-partlabel/EFI-SYSTEM",
+        "format": "vfat",
+        "label": "EFI-SYSTEM",
+        "path": "/var/mnt/boot"
+      }
+    ]
+  },
+  "systemd": {
+    "units": [
+      {
+        "contents": "[Unit]\nDescription=Install required packages\nWants=network-online.target\nAfter=network-online.target\nBefore=zincati.service\nConditionPathExists=!/var/lib/%N.stamp\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/bin/rpm-ostree install -y --allow-inactive python3 btop ncdu wireguard-tools iptables iperf3 podman wget stress-ng\nExecStart=/bin/touch /var/lib/%N.stamp\nExecStart=/bin/systemctl --no-block reboot\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "rpm-ostree-install-requirements.service"
+      }
+    ]
+  }
+}
