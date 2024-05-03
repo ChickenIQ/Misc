@@ -9,6 +9,12 @@ passwd:
 
 systemd:
   units:
+    # Opt out of counting
+    - name: rpm-ostree-countme.timer
+      enabled: false
+      mask: true
+
+    # Install required packages
     - name: rpm-ostree-install-requirements.service
       enabled: true
       contents: |
@@ -22,7 +28,7 @@ systemd:
         [Service]
         Type=oneshot
         RemainAfterExit=yes
-        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive python3 btop ncdu wireguard-tools iptables iperf3 podman wget stress-ng
+        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive iptables wireguard-tools podman python3 btop ncdu iperf3 stress-ng
         ExecStart=/bin/touch /var/lib/%N.stamp
         ExecStart=/bin/systemctl --no-block reboot
 
@@ -31,6 +37,7 @@ systemd:
 
 storage:
   filesystems:
+    # Format root partition as Btrfs
     - device: /dev/disk/by-partlabel/root
       wipe_filesystem: true
       format: btrfs
@@ -41,6 +48,7 @@ storage:
         - space_cache=v2
         - compress=zstd:1
 
+    # Mount EFI partition to install netboot.xyza
     - device: /dev/disk/by-partlabel/EFI-SYSTEM
       path: /var/mnt/boot
       format: vfat
@@ -51,6 +59,15 @@ storage:
     - path: /etc/hostname
       contents:
         inline: 'coreos'
+
+    # DNS
+    - path: /etc/systemd/resolved.conf.d/dns.conf
+      contents:
+        inline: |
+          [Resolve]
+          DNS=1.1.1.1
+          FallbackDNS=8.8.8.8
+          Domains=~.
 
     # Zram
     - path: /etc/systemd/zram-generator.conf
@@ -77,7 +94,7 @@ storage:
           start_time = "22:30"
           length_minutes = 60
 
-    # Netboot
+    # Netboot.xyz
     - path: /var/mnt/boot/netboot.xyz.efi
       contents:
         source: https://boot.netboot.xyz/ipxe/netboot.xyz.efi
