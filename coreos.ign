@@ -100,7 +100,7 @@
         "name": "rpm-ostree-countme.timer"
       },
       {
-        "contents": "[Unit]\nDescription=Install required packages\nWants=network-online.target\nAfter=network-online.target\nBefore=zincati.service\nConditionPathExists=!/var/lib/%N.stamp\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/bin/rpm-ostree install -y --allow-inactive iptables wireguard-tools podman python3 vim btop ncdu iperf3 stress-ng \nExecStart=/bin/touch /var/lib/%N.stamp\nExecStart=/bin/systemctl --no-block reboot\n\n[Install]\nWantedBy=multi-user.target\n",
+        "contents": "[Unit]\nDescription=Install required packages\nWants=network-online.target\nAfter=network-online.target\nBefore=zincati.service\nConditionPathExists=!/var/lib/%N.stamp\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/bin/rpm-ostree upgrade\nExecStart=/usr/bin/rpm-ostree install -y --allow-inactive iptables wireguard-tools podman python3 vim btop ncdu iperf3 stress-ng \nExecStart=/bin/touch /var/lib/%N.stamp\nExecStart=/bin/systemctl --no-block reboot\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
         "name": "rpm-ostree-install-requirements.service"
       }
