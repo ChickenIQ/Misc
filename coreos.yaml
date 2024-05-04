@@ -29,6 +29,7 @@ systemd:
         [Service]
         Type=oneshot
         RemainAfterExit=yes
+        ExecStart=/usr/bin/rpm-ostree upgrade
         ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive iptables wireguard-tools podman python3 vim btop ncdu iperf3 stress-ng 
         ExecStart=/bin/touch /var/lib/%N.stamp
         ExecStart=/bin/systemctl --no-block reboot
