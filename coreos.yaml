@@ -4,7 +4,6 @@ version: 1.5.0
 passwd:
   users:
     - name: core
-      password_hash: $y$j9T$bFn3qKyKL44fXpedvIu0D0$PxQUvso852tNIA.Ck2Xv9mWf3IUeHwesySy77A.tNC1
       ssh_authorized_keys:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJF4Waz2pv+NAEsLMT1kaFbtYjx6faBRPgHzlHdN30In
 
