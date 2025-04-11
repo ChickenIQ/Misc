@@ -1,67 +1,34 @@
 variant: fcos
-version: 1.5.0
+version: 1.6.0
 
 passwd:
   users:
     - name: core
-      ssh_authorized_keys:
-        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJF4Waz2pv+NAEsLMT1kaFbtYjx6faBRPgHzlHdN30In
+      ssh_authorized_keys: ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJF4Waz2pv+NAEsLMT1kaFbtYjx6faBRPgHzlHdN30In"]
 
 systemd:
   units:
-    # Opt out of counting
     - name: rpm-ostree-countme.timer
       enabled: false
       mask: true
 
-    # Install required packages
-    - name: rpm-ostree-install-requirements.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Install required packages
-        Wants=network-online.target
-        After=network-online.target
-        Before=zincati.service
-        ConditionPathExists=!/var/lib/%N.stamp
-
-        [Service]
-        Type=oneshot
-        RemainAfterExit=yes
-        ExecStart=/usr/bin/rpm-ostree upgrade
-        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive iptables wireguard-tools podman python3 vim btop ncdu iperf3 stress-ng 
-        ExecStart=/bin/touch /var/lib/%N.stamp
-        ExecStart=/bin/systemctl --no-block reboot
-
-        [Install]
-        WantedBy=multi-user.target
-
 storage:
   filesystems:
-    # Format root partition as Btrfs
     - device: /dev/disk/by-partlabel/root
       wipe_filesystem: true
       format: btrfs
       label: root
-      mount_options:
-        - noatime
-        - discard=async
-        - space_cache=v2
-        - compress=zstd:1
-
-    # Mount EFI partition to install netboot.xyza
-    - device: /dev/disk/by-partlabel/EFI-SYSTEM
-      path: /var/mnt/boot
-      format: vfat
-      label: EFI-SYSTEM
+      mount_options: ["noatime"]
 
   files:
-    # Hostname
     - path: /etc/hostname
       contents:
         inline: 'coreos'
 
-    # DNS
+    - path: /etc/systemd/zram-generator.conf
+      contents:
+        inline: '[zram0]'
+
     - path: /etc/systemd/resolved.conf.d/dns.conf
       contents:
         inline: |
@@ -70,27 +37,6 @@ storage:
           FallbackDNS=8.8.8.8
           Domains=~.
 
-    # Zram
-    - path: /etc/systemd/zram-generator.conf
-      contents:
-        inline: '[zram0]'
-
-    # SSH
-    - path: /etc/ssh/sshd_config.d/99-default.conf
-      contents:
-        inline: |
-          MaxAuthTries 3
-          PermitRootLogin no
-          PermitEmptyPasswords no
-          PasswordAuthentication no
-
-    # Default editor
-    - path: /etc/profile.d/zz-default-editor.sh
-      overwrite: true
-      contents:
-        inline: export EDITOR=vim
-
-    # Update strategy
     - path: /etc/zincati/config.d/55-updates-strategy.toml
       contents:
         inline: |
@@ -100,12 +46,3 @@ storage:
           days = [ "Sat", "Sun" ]
           start_time = "22:30"
           length_minutes = 60
-
-    # Netboot.xyz
-    - path: /var/mnt/boot/netboot.xyz.efi
-      contents:
-        source: https://boot.netboot.xyz/ipxe/netboot.xyz.efi
-
-    - path: /var/mnt/boot/netboot.xyz-arm64.efi
-      contents:
-        source: https://boot.netboot.xyz/ipxe/netboot.xyz-arm64.efi
