@@ -15,6 +15,20 @@
   "storage": {
     "files": [
       {
+        "path": "/etc/hostname",
+        "contents": {
+          "compression": "",
+          "source": "data:,coreos"
+        }
+      },
+      {
+        "path": "/etc/systemd/zram-generator.conf",
+        "contents": {
+          "compression": "",
+          "source": "data:,%5Bzram0%5D"
+        }
+      },
+      {
         "path": "/etc/systemd/resolved.conf.d/dns.conf",
         "contents": {
           "compression": "",
